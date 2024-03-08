@@ -50,6 +50,7 @@ members = [
     "crates/multi_buffer",
     "crates/node_runtime",
     "crates/notifications",
+    "crates/notebook-assist",
     "crates/outline",
     "crates/picker",
     "crates/prettier",
