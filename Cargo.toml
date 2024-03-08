@@ -153,6 +153,7 @@ media = { path = "crates/media" }
 menu = { path = "crates/menu" }
 multi_buffer = { path = "crates/multi_buffer" }
 node_runtime = { path = "crates/node_runtime" }
+notebook = { package  = "notebook-assist", path = "crates/notebook-assist" }
 notifications = { path = "crates/notifications" }
 outline = { path = "crates/outline" }
 picker = { path = "crates/picker" }

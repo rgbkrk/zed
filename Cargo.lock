@@ -12840,6 +12840,7 @@ dependencies = [
  "menu",
  "mimalloc",
  "node_runtime",
+ "notebook-assist",
  "notifications",
  "outline",
  "parking_lot",
