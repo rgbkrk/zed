@@ -1,6 +1,10 @@
-use editor::Editor;
-use gpui::{actions, red, AppContext, EventEmitter, FocusHandle, FocusableView, View};
-use ui::{IntoElement, ParentElement as _, Styled as _, ViewContext, VisualContext};
+use std::time::Duration;
+
+use editor::{Editor, EditorEvent};
+use futures::SinkExt as _;
+use gpui::{actions, AppContext, EventEmitter, FocusHandle, FocusableView, Task, View};
+use smol::stream::StreamExt;
+use ui::{IntoElement, ViewContext, VisualContext};
 use workspace::{item::Item, Workspace};
 
 actions!(notebook, [Deploy]);
@@ -36,9 +40,45 @@ pub struct Notebook {
 
 impl Notebook {
     pub fn new(cx: &mut ViewContext<Self>) -> Self {
+        let (mut tx, mut rx) = futures::channel::mpsc::unbounded::<String>();
+
+        // Off the main thread
+        let timer = cx.background_executor().timer(Duration::from_secs(1));
+        cx.background_executor()
+            .spawn(async move {
+                timer.await;
+                tx.send("Hello!".to_string()).await.ok();
+                // Set up a non-blocking connection to the jupyter notebook stuff
+            })
+            .detach();
+
+        // On the main thread but async
+        cx.spawn(|this, mut cx| async move {
+            while let Some(msg) = rx.next().await {
+                this.update(&mut cx, |notebook, cx| {
+                    notebook
+                        .editor
+                        .update(cx, |editor, cx| editor.insert(&format!("{}\n", msg), cx))
+                    // update the notebook with the message
+                })
+                .ok();
+            }
+        })
+        .detach();
+
+        let editor = cx.new_view(|cx| Editor::multi_line(cx));
+
+        cx.subscribe(&editor, |this, editor, e: &EditorEvent, cx| {
+            let x = match e {
+                EditorEvent::Edited => editor.read(cx).text(cx).to_string(),
+                _ => "".to_string(),
+            };
+        })
+        .detach();
+
         Self {
             focus_handle: cx.focus_handle(),
-            editor: cx.new_view(|cx| Editor::auto_height(4, cx)),
+            editor,
         }
     }
 }
@@ -66,7 +106,7 @@ impl EventEmitter<()> for Notebook {}
 
 impl gpui::Render for Notebook {
     fn render(&mut self, _cx: &mut ViewContext<Self>) -> impl IntoElement {
-        gpui::div().size_full().bg(red()).child(self.editor.clone())
+        self.editor.clone()
     }
 }
 
