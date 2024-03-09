@@ -6137,6 +6137,7 @@ dependencies = [
  "serde_json",
  "settings",
  "smol",
+ "sum_tree",
  "telemetry_events",
  "theme",
  "tiktoken-rs",

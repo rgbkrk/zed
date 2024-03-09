@@ -246,7 +246,7 @@ fn main() {
         semantic_index::init(fs.clone(), http.clone(), languages.clone(), cx);
         vim::init(cx);
         terminal_view::init(cx);
-        notebook::init(cx);
+        notebook::init(fs.clone(), http.clone(), languages.clone(), cx);
 
         journal::init(app_state.clone(), cx);
         language_selector::init(cx);
