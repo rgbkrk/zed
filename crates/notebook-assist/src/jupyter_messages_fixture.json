@@ -1,0 +1,274 @@
+[
+  {
+    "header": {
+      "date": "2024-03-08T21:34:12.593406Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_761",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:12.592285Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_159",
+      "msg_type": "is_complete_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "busy"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:12.595093Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_763",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:12.592285Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_159",
+      "msg_type": "is_complete_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "idle"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:12.598818Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_764",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:12.598173Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_160",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "busy"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:12.599006Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_765",
+      "msg_type": "execute_input",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:12.598173Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_160",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "code": "HELLO WORLD",
+      "execution_count": 80
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:12.599006Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_765",
+      "msg_type": "execute_input",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:12.598173Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_160",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "code": "import pandas as pd",
+      "execution_count": 80
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:12.601110Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_767",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:12.598173Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_160",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "idle"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:20.241695Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_768",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:20.240159Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_161",
+      "msg_type": "is_complete_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "busy"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:20.243447Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_770",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:20.240159Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_161",
+      "msg_type": "is_complete_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "idle"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:20.248516Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_771",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:20.247592Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_162",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "busy"
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:20.248737Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_772",
+      "msg_type": "execute_input",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:20.247592Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_162",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "code": "pd.DataFrame([1,2,3])",
+      "execution_count": 81
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:20.250057Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_773",
+      "msg_type": "execute_result",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:20.247592Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_162",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "data": {
+        "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>0</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>1</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>2</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>3</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+        "text/plain": "   0\n0  1\n1  2\n2  3"
+      },
+      "execution_count": 81,
+      "metadata": {}
+    }
+  },
+  {
+    "header": {
+      "date": "2024-03-08T21:34:20.254256Z",
+      "msg_id": "cd8571b7-cfb494d810cb1b1e891568de_75614_775",
+      "msg_type": "status",
+      "session": "cd8571b7-cfb494d810cb1b1e891568de",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "parent_header": {
+      "date": "2024-03-08T21:34:20.247592Z",
+      "msg_id": "e3922a67-1c57f66b9958763a36d58a11_75584_162",
+      "msg_type": "execute_request",
+      "session": "e3922a67-1c57f66b9958763a36d58a11",
+      "username": "kylekelley",
+      "version": "5.3"
+    },
+    "metadata": {},
+    "content": {
+      "execution_state": "idle"
+    }
+  }
+]

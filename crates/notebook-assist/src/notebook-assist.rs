@@ -64,32 +64,6 @@ pub fn init(
 //  d. This could be as simple as a newtype wrapper around a normal buffer, that is defined in the
 //     project crate.
 
-// Messages -> Notebook format
-// Load from disk into a notebook format
-// New sessions with messaging add to the notebook
-
-/***
-     Visually, in the notebook:      Logically, inside the buffer:
-  {1} --------------------------
-     Cell ID: 124235 ->        |  -> import pandas as pd
-     import pandas as pd       |     # Keep typing here
-                               |                         {1} <- anchor
-     # Keep typing here        |     pd.read_csv('data.csv')
-{1.end}{2} |-------------------------|                         {2} <- anchor
-     Cell ID: 124236           |
-     pd.read_csv('data.csv')   |
-{2.end}|--------------------------|
-     |-----table 1-----|       |
-     --------------------------|
-     Cell ID: 124237
-
-     Map<MessageID, CellId>
-     Vec<(CellId, Anchor)> -> This means that the cell covers all of the text from
-                                Vec[ix].anchor to Vec[ix+1].anchor
-    Map<CellId -> Blocks>   -> This is the UI output area of the cell (+ similar messages from the)
-
-
-*/
 type CellId = String;
 
 enum Output {
