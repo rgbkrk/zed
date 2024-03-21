@@ -9386,6 +9386,7 @@ dependencies = [
  "language",
  "serde",
  "serde_json",
+ "settings",
  "smol",
  "util",
 ]
