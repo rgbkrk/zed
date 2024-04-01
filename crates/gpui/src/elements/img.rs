@@ -1,11 +1,12 @@
-use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::{fs, hash::Hash};
 
 use crate::{
-    point, px, size, AbsoluteLength, Asset, Bounds, DefiniteLength, DevicePixels, Element,
-    ElementContext, Hitbox, ImageData, InteractiveElement, Interactivity, IntoElement, LayoutId,
-    Length, Pixels, SharedUri, Size, StyleRefinement, Styled, SvgSize, UriOrPath, WindowContext,
+    point, px, relative, size, AbsoluteLength, Asset, Bounds, DefiniteLength, DevicePixels,
+    Element, ElementContext, Hitbox, ImageData, InteractiveElement, Interactivity, IntoElement,
+    LayoutId, Length, Pixels, SharedUri, Size, StyleRefinement, Styled, SvgSize, UriOrPath,
+    WindowContext,
 };
 use futures::{AsyncReadExt, Future};
 use image::{ImageBuffer, ImageError};
@@ -99,6 +100,8 @@ pub enum ObjectFit {
     Contain,
     /// The image will be scaled to cover the bounds of the element.
     Cover,
+    /// The image will be scaled down to fit within the bounds of the element.
+    ScaleDown,
     /// The image will maintain its original size.
     None,
 }
@@ -110,24 +113,14 @@ impl ObjectFit {
         bounds: Bounds<Pixels>,
         image_size: Size<DevicePixels>,
     ) -> Bounds<Pixels> {
-        let image_size = image_size.map(|dimension| Pixels::from(u32::from(dimension)));
-        let image_ratio = image_size.width / image_size.height;
+        let image_size_px = image_size.map(|dimension| Pixels::from(u32::from(dimension)));
+        let image_ratio = image_size_px.width / image_size_px.height;
         let bounds_ratio = bounds.size.width / bounds.size.height;
 
         match self {
             ObjectFit::Fill => bounds,
             ObjectFit::Contain => {
-                let new_size = if bounds_ratio > image_ratio {
-                    size(
-                        image_size.width * (bounds.size.height / image_size.height),
-                        bounds.size.height,
-                    )
-                } else {
-                    size(
-                        bounds.size.width,
-                        image_size.height * (bounds.size.width / image_size.width),
-                    )
-                };
+                let new_size = compute_contain(bounds_ratio, image_ratio, image_size_px, bounds);
 
                 Bounds {
                     origin: point(
@@ -141,11 +134,11 @@ impl ObjectFit {
                 let new_size = if bounds_ratio > image_ratio {
                     size(
                         bounds.size.width,
-                        image_size.height * (bounds.size.width / image_size.width),
+                        image_size_px.height * (bounds.size.width / image_size_px.width),
                     )
                 } else {
                     size(
-                        image_size.width * (bounds.size.height / image_size.height),
+                        image_size_px.width * (bounds.size.height / image_size_px.height),
                         bounds.size.height,
                     )
                 };
@@ -158,11 +151,38 @@ impl ObjectFit {
                     size: new_size,
                 }
             }
+            ObjectFit::ScaleDown => {
+                let new_size = compute_contain(bounds_ratio, image_ratio, image_size_px, bounds);
+                if new_size.width < image_size_px.width || new_size.height < image_size_px.height {
+                    ObjectFit::Contain.get_bounds(bounds, image_size)
+                } else {
+                    ObjectFit::None.get_bounds(bounds, image_size)
+                }
+            }
             ObjectFit::None => Bounds {
                 origin: bounds.origin,
-                size: image_size,
+                size: image_size_px,
             },
         }
+    }
+}
+
+fn compute_contain(
+    bounds_ratio: f32,
+    image_ratio: f32,
+    image_size: Size<Pixels>,
+    bounds: Bounds<Pixels>,
+) -> Size<Pixels> {
+    if bounds_ratio > image_ratio {
+        size(
+            image_size.width * (bounds.size.height / image_size.height),
+            bounds.size.height,
+        )
+    } else {
+        size(
+            bounds.size.width,
+            image_size.height * (bounds.size.width / image_size.width),
+        )
     }
 }
 
@@ -198,6 +218,10 @@ impl Element for Img {
                 let image_size = data.size();
                 match (style.size.width, style.size.height) {
                     (Length::Auto, Length::Auto) => {
+                        // Here's a flex, set the size of your children
+                        // Here's another flex, also set to size of children
+
+                        // Children: I'm relative.
                         style.size = Size {
                             width: Length::Definite(DefiniteLength::Absolute(
                                 AbsoluteLength::Pixels(px(image_size.width.0 as f32)),
@@ -205,7 +229,9 @@ impl Element for Img {
                             height: Length::Definite(DefiniteLength::Absolute(
                                 AbsoluteLength::Pixels(px(image_size.height.0 as f32)),
                             )),
-                        }
+                        };
+                        // style.size.width = relative(1.0).into();
+                        // style.size.height = relative(1.0).into();
                     }
                     _ => {}
                 }
@@ -223,7 +249,7 @@ impl Element for Img {
         cx: &mut ElementContext,
     ) -> Option<Hitbox> {
         self.interactivity
-            .after_layout(bounds, bounds.size, cx, |_, _, hitbox, _| hitbox)
+            .after_layout(dbg!(bounds), bounds.size, cx, |_, _, hitbox, _| hitbox)
     }
 
     fn paint(

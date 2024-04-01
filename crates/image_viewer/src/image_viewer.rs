@@ -1,7 +1,8 @@
 use gpui::{
     canvas, div, fill, img, opaque_grey, point, size, AnyElement, AppContext, Bounds, Context,
     EventEmitter, FocusHandle, FocusableView, Img, InteractiveElement, IntoElement, Model,
-    ParentElement, Render, Styled, Task, View, ViewContext, VisualContext, WeakView, WindowContext,
+    ObjectFit, ParentElement, Render, Styled, Task, View, ViewContext, VisualContext, WeakView,
+    WindowContext,
 };
 use persistence::IMAGE_VIEWER;
 use ui::{h_flex, prelude::*};
@@ -156,6 +157,8 @@ impl FocusableView for ImageView {
 impl Render for ImageView {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
+            .h_full()
+            .debug_below()
             .track_focus(&self.focus_handle)
             .size_full()
             .child(
@@ -207,12 +210,24 @@ impl Render for ImageView {
                 .left_0(),
             )
             .child(
-                v_flex().h_full().justify_around().child(
-                    h_flex()
-                        .w_full()
-                        .justify_around()
-                        .child(img(self.path.clone())),
-                ),
+                div()
+                    .flex()
+                    .justify_center()
+                    .items_center()
+                    .w_full()
+                    .h_full()
+                    .child(
+                        img(self.path.clone()).object_fit(ObjectFit::ScaleDown), // .size_full()
+                                                                                 // .max_h_full()
+                                                                                 // .max_w_full(),
+                    ),
+                //
+                // v_flex().size_full().justify_around().child(
+                //     h_flex()
+                //         .w_full()
+                //         .justify_around()
+                //         .child(img(self.path.clone())),
+                //),
             )
     }
 }
