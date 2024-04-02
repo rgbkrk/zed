@@ -157,78 +157,77 @@ impl FocusableView for ImageView {
 impl Render for ImageView {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
-            .h_full()
-            .debug_below()
+            // .h_full()
+            // .debug_below()
             .track_focus(&self.focus_handle)
-            .size_full()
+            // .size_full()
+            // .child(
+            //     // Checkered background behind the image
+            //     canvas(
+            //         |_, _| (),
+            //         |bounds, _, cx| {
+            //             let square_size = 32.0;
+            //             let start_y = bounds.origin.y.0;
+            //             let height = bounds.size.height.0;
+            //             let start_x = bounds.origin.x.0;
+            //             let width = bounds.size.width.0;
+            //             let mut y = start_y;
+            //             let mut x = start_x;
+            //             let mut color_swapper = true;
+            //             // draw checkerboard pattern
+            //             while y <= start_y + height {
+            //                 // Keeping track of the grid in order to be resilient to resizing
+            //                 let start_swap = color_swapper;
+            //                 while x <= start_x + width {
+            //                     let rect = Bounds::new(
+            //                         point(px(x), px(y)),
+            //                         size(px(square_size), px(square_size)),
+            //                     );
+            //                     let color = if color_swapper {
+            //                         opaque_grey(0.6, 0.4)
+            //                     } else {
+            //                         opaque_grey(0.7, 0.4)
+            //                     };
+            //                     cx.paint_quad(fill(rect, color));
+            //                     color_swapper = !color_swapper;
+            //                     x += square_size;
+            //                 }
+            //                 x = start_x;
+            //                 color_swapper = !start_swap;
+            //                 y += square_size;
+            //             }
+            //         },
+            //     )
+            //     .border_2()
+            //     .border_color(cx.theme().styles.colors.border)
+            //     .size_full()
+            //     .absolute()
+            //     .top_0()
+            //     .left_0(),
+            // )
+            // .child(
+            // div()
+            .flex()
+            .justify_center()
+            .items_center()
+            .w_full()
+            .h_full()
             .child(
-                // Checkered background behind the image
-                canvas(
-                    |_, _| (),
-                    |bounds, _, cx| {
-                        let square_size = 32.0;
-
-                        let start_y = bounds.origin.y.0;
-                        let height = bounds.size.height.0;
-                        let start_x = bounds.origin.x.0;
-                        let width = bounds.size.width.0;
-
-                        let mut y = start_y;
-                        let mut x = start_x;
-                        let mut color_swapper = true;
-                        // draw checkerboard pattern
-                        while y <= start_y + height {
-                            // Keeping track of the grid in order to be resilient to resizing
-                            let start_swap = color_swapper;
-                            while x <= start_x + width {
-                                let rect = Bounds::new(
-                                    point(px(x), px(y)),
-                                    size(px(square_size), px(square_size)),
-                                );
-
-                                let color = if color_swapper {
-                                    opaque_grey(0.6, 0.4)
-                                } else {
-                                    opaque_grey(0.7, 0.4)
-                                };
-
-                                cx.paint_quad(fill(rect, color));
-                                color_swapper = !color_swapper;
-                                x += square_size;
-                            }
-                            x = start_x;
-                            color_swapper = !start_swap;
-                            y += square_size;
-                        }
-                    },
-                )
-                .border_2()
-                .border_color(cx.theme().styles.colors.border)
-                .size_full()
-                .absolute()
-                .top_0()
-                .left_0(),
+                img(self.path.clone())
+                    .max_h_full()
+                    .max_w_full()
+                    .object_fit(ObjectFit::ScaleDown), // .size_full()
+                                                       // .max_h_full()
+                                                       // .max_w_full(),
             )
-            .child(
-                div()
-                    .flex()
-                    .justify_center()
-                    .items_center()
-                    .w_full()
-                    .h_full()
-                    .child(
-                        img(self.path.clone()).object_fit(ObjectFit::ScaleDown), // .size_full()
-                                                                                 // .max_h_full()
-                                                                                 // .max_w_full(),
-                    ),
-                //
-                // v_flex().size_full().justify_around().child(
-                //     h_flex()
-                //         .w_full()
-                //         .justify_around()
-                //         .child(img(self.path.clone())),
-                //),
-            )
+        //
+        // v_flex().size_full().justify_around().child(
+        //     h_flex()
+        //         .w_full()
+        //         .justify_around()
+        //         .child(img(self.path.clone())),
+        //),
+        // )
     }
 }
 

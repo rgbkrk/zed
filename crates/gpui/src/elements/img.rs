@@ -222,14 +222,17 @@ impl Element for Img {
                         // Here's another flex, also set to size of children
 
                         // Children: I'm relative.
-                        style.size = Size {
-                            width: Length::Definite(DefiniteLength::Absolute(
-                                AbsoluteLength::Pixels(px(image_size.width.0 as f32)),
-                            )),
-                            height: Length::Definite(DefiniteLength::Absolute(
-                                AbsoluteLength::Pixels(px(image_size.height.0 as f32)),
-                            )),
-                        };
+
+                        dbg!(
+                            style.size = Size {
+                                width: Length::Definite(DefiniteLength::Absolute(
+                                    AbsoluteLength::Pixels(px(image_size.width.0 as f32)),
+                                )),
+                                height: Length::Definite(DefiniteLength::Absolute(
+                                    AbsoluteLength::Pixels(px(image_size.height.0 as f32)),
+                                )),
+                            }
+                        );
                         // style.size.width = relative(1.0).into();
                         // style.size.height = relative(1.0).into();
                     }
