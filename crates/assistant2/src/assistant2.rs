@@ -138,6 +138,49 @@ impl AssistantChat {
         })
     }
 
+    fn setup_query(&self, cx: &mut ViewContext<Self>) -> Task<Result<String>> {
+        // Let's try another approach where we take the user's previous messages and turn that into a query
+        // by calling for a completion.
+
+        // For now, we'll set up a summary request message, where we tell the model we need something simple to summarize
+
+        let mut query_creation_messages = self.completion_messages(cx);
+
+        query_creation_messages.push(CompletionMessage {
+            role: CompletionRole::System,
+            body: r#"
+                Turn the user's query into a single search string that can be used to search for code base snippets relevant to the user's query. Everything you respond with will be fed directly to a semantic index.
+
+                ## Example
+
+                **User**: How can I create a component in GPUI that works like a `<details>` / `<summary>` pair in HTML?
+
+                GPUI create component like HTML details summary example
+                "#.into(),
+        });
+
+        let query = CompletionProvider::get(cx).complete(
+            self.model.clone(),
+            query_creation_messages,
+            Vec::new(),
+            1.0,
+        );
+
+        cx.spawn(|_, _| async move {
+            let mut stream = query.await?;
+
+            // todo!(): Show the query in the UI as part of the context view
+            let mut query = String::new();
+
+            while let Some(chunk) = stream.next().await {
+                let chunk = chunk?;
+                query.push_str(&chunk);
+            }
+
+            anyhow::Ok(query)
+        })
+    }
+
     fn submit(&mut self, Submit(mode): &Submit, cx: &mut ViewContext<Self>) {
         let Some(focused_message_id) = self.focused_message_id(cx) else {
             log::error!("unexpected state: no user message editor is focused.");
@@ -232,8 +275,9 @@ impl AssistantChat {
             .contexts
             .push(AssistantContext::codebase(context_id));
 
-        let query = self.user_message(submitted_id).body.read(cx).text(cx);
-        let results = self.project_index.read(cx).search(&query, 16, cx);
+        let query = self.setup_query(cx);
+        let results = self.project_index.read(&cx).search(query, 16, &cx);
+
         let fs = self.fs.clone();
 
         cx.spawn(|this, mut cx| async move {

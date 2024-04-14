@@ -10,7 +10,7 @@ use futures::stream::StreamExt;
 use futures_batch::ChunksTimeoutStreamExt;
 use gpui::{
     AppContext, AsyncAppContext, Context, EntityId, EventEmitter, Global, Model, ModelContext,
-    Subscription, Task, WeakModel,
+    SharedString, Subscription, Task, WeakModel,
 };
 use heed::types::{SerdeBincode, Str};
 use language::LanguageRegistry;
@@ -223,7 +223,12 @@ impl ProjectIndex {
         }
     }
 
-    pub fn search(&self, query: &str, limit: usize, cx: &AppContext) -> Task<Vec<SearchResult>> {
+    pub fn search(
+        &self,
+        query: Task<SharedString>,
+        limit: usize,
+        cx: &AppContext,
+    ) -> Task<Vec<SearchResult>> {
         let mut worktree_searches = Vec::new();
         for worktree_index in self.worktree_indices.values() {
             if let WorktreeIndexHandle::Loaded { index, .. } = worktree_index {
@@ -669,7 +674,7 @@ impl WorktreeIndex {
 
     fn search(
         &self,
-        query: &str,
+        query: Task<SharedString>,
         limit: usize,
         cx: &AppContext,
     ) -> Task<Result<Vec<SearchResult>>> {
@@ -695,7 +700,6 @@ impl WorktreeIndex {
             }
         });
 
-        let query = query.to_string();
         let embedding_provider = self.embedding_provider.clone();
         let worktree = self.worktree.clone();
         cx.spawn(|cx| async move {
@@ -703,7 +707,7 @@ impl WorktreeIndex {
             let embedding_query_start = std::time::Instant::now();
 
             let mut query_embeddings = embedding_provider
-                .embed(&[TextToEmbed::new(&query)])
+                .embed(&[TextToEmbed::new(query.await.to_string().as_str())])
                 .await?;
             let query_embedding = query_embeddings
                 .pop()
@@ -921,7 +925,7 @@ mod tests {
             .update(|cx| {
                 let project_index = project_index.read(cx);
                 let query = "garbage in, garbage out";
-                project_index.search(query, 4, cx)
+                project_index.search(Task::ready(SharedString::from(query)), 4, cx)
             })
             .await;
 
