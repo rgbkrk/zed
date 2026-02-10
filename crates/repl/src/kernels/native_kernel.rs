@@ -173,16 +173,23 @@ impl NativeRunningKernel {
 
                 async move |cx| -> anyhow::Result<()> {
                     loop {
-                        let message = futures::select! {
-                            msg = iopub.read().fuse() => msg.context("iopub recv")?,
-                            msg = shell.read().fuse() => msg.context("shell recv")?,
-                            msg = control.read().fuse() => msg.context("control recv")?,
+                        let result = futures::select! {
+                            msg = iopub.read().fuse() => msg.context("iopub recv"),
+                            msg = shell.read().fuse() => msg.context("shell recv"),
+                            msg = control.read().fuse() => msg.context("control recv"),
                         };
-                        session
-                            .update_in(cx, |session, window, cx| {
-                                session.route(&message, window, cx);
-                            })
-                            .ok();
+                        match result {
+                            Ok(message) => {
+                                session
+                                    .update_in(cx, |session, window, cx| {
+                                        session.route(&message, window, cx);
+                                    })
+                                    .ok();
+                            }
+                            Err(err) => {
+                                log::warn!("kernel: failed to read message: {err:#}");
+                            }
+                        }
                     }
                 }
             });
