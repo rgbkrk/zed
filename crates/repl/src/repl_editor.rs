@@ -285,6 +285,7 @@ pub fn run(
 
 /// Find the enclosing top-level block at the cursor position using treesitter.
 /// Returns the range of the block, or the selection if non-empty.
+/// Groups all adjacent top-level statements that are not separated by blank lines.
 fn block_range(buffer: &BufferSnapshot, selection: Range<Point>) -> Option<Range<Point>> {
     let start_offset = selection.start.to_offset(buffer);
     let end_offset = selection.end.to_offset(buffer);
@@ -313,8 +314,35 @@ fn block_range(buffer: &BufferSnapshot, selection: Range<Point>) -> Option<Range
                 parent_kind,
                 "module" | "program" | "source_file" | "chunk" | "translation_unit"
             ) {
-                let start = buffer.offset_to_point(node.start_byte());
-                let end = buffer.offset_to_point(node.end_byte());
+                let mut start = buffer.offset_to_point(node.start_byte());
+                let mut end = buffer.offset_to_point(node.end_byte());
+
+                // Walk backward through ALL previous siblings that are not
+                // separated by blank lines
+                let mut prev_sibling = node.prev_sibling();
+                while let Some(sibling) = prev_sibling {
+                    let sibling_end_row = buffer.offset_to_point(sibling.end_byte()).row;
+                    // Stop if there's a blank line between this sibling and current start
+                    if start.row > sibling_end_row + 1 {
+                        break;
+                    }
+                    start = buffer.offset_to_point(sibling.start_byte());
+                    prev_sibling = sibling.prev_sibling();
+                }
+
+                // Walk forward through ALL next siblings that are not
+                // separated by blank lines
+                let mut next_sibling = node.next_sibling();
+                while let Some(sibling) = next_sibling {
+                    let sibling_start_row = buffer.offset_to_point(sibling.start_byte()).row;
+                    // Stop if there's a blank line between current end and this sibling
+                    if sibling_start_row > end.row + 1 {
+                        break;
+                    }
+                    end = buffer.offset_to_point(sibling.end_byte());
+                    next_sibling = sibling.next_sibling();
+                }
+
                 return Some(start..end);
             }
         }
@@ -1133,31 +1161,52 @@ mod tests {
     fn test_block_range_python(cx: &mut App) {
         let python = languages::language("python", tree_sitter_python::LANGUAGE.into());
 
-        // Test function detection
+        // Test function detection - with blank line separating from call
         let buffer = cx.new(|cx| {
-            let mut buffer = Buffer::local("def times_two(x):\n    print(x*2)\ntimes_two(3)\n", cx);
+            let mut buffer =
+                Buffer::local("def times_two(x):\n    print(x*2)\n\ntimes_two(3)\n", cx);
             buffer.set_language(Some(python.clone()), cx);
             buffer
         });
         let snapshot = buffer.read(cx).snapshot();
 
-        // Cursor inside function body should select entire function
+        // Cursor inside function body should select entire function (not the call after blank line)
         let range = block_range(&snapshot, Point::new(1, 4)..Point::new(1, 4));
         assert!(range.is_some());
         let range = range.unwrap();
         let text: String = snapshot.text_for_range(range).collect();
         assert_eq!(text, "def times_two(x):\n    print(x*2)");
 
-        // Cursor on standalone statement should select just that statement
-        let range = block_range(&snapshot, Point::new(2, 0)..Point::new(2, 0));
+        // Cursor on standalone statement after blank line should select just that statement
+        let range = block_range(&snapshot, Point::new(3, 0)..Point::new(3, 0));
         assert!(range.is_some());
         let text: String = snapshot.text_for_range(range.unwrap()).collect();
         assert_eq!(text, "times_two(3)");
 
-        // Test for-loop detection
+        // Test contiguous grouping - statements without blank lines are grouped
+        let buffer = cx.new(|cx| {
+            let mut buffer = Buffer::local("x = 1\ny = 2\nz = x + y\n\nprint(z)\n", cx);
+            buffer.set_language(Some(python.clone()), cx);
+            buffer
+        });
+        let snapshot = buffer.read(cx).snapshot();
+
+        // Cursor on any of the first three lines should select all three
+        let range = block_range(&snapshot, Point::new(1, 0)..Point::new(1, 0));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(text, "x = 1\ny = 2\nz = x + y");
+
+        // Cursor on print after blank line should select just that
+        let range = block_range(&snapshot, Point::new(4, 0)..Point::new(4, 0));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(text, "print(z)");
+
+        // Test for-loop detection - with blank line separating
         let buffer = cx.new(|cx| {
             let mut buffer =
-                Buffer::local("for i in range(3):\n    print(i)\nprint(\"done\")\n", cx);
+                Buffer::local("for i in range(3):\n    print(i)\n\nprint(\"done\")\n", cx);
             buffer.set_language(Some(python.clone()), cx);
             buffer
         });
@@ -1169,10 +1218,10 @@ mod tests {
         let text: String = snapshot.text_for_range(range.unwrap()).collect();
         assert_eq!(text, "for i in range(3):\n    print(i)");
 
-        // Test class detection
+        // Test class detection - with blank line separating
         let buffer = cx.new(|cx| {
             let mut buffer = Buffer::local(
-                "class Foo:\n    def bar(self):\n        pass\nx = Foo()\n",
+                "class Foo:\n    def bar(self):\n        pass\n\nx = Foo()\n",
                 cx,
             );
             buffer.set_language(Some(python.clone()), cx);
@@ -1201,10 +1250,10 @@ mod tests {
             tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
         );
 
-        // Test function declaration
+        // Test function declaration - with blank line separating from call
         let buffer = cx.new(|cx| {
             let mut buffer = Buffer::local(
-                "function greet(name: string) {\n  console.log(`Hello, ${name}`);\n}\ngreet(\"world\");\n",
+                "function greet(name: string) {\n  console.log(`Hello, ${name}`);\n}\n\ngreet(\"world\");\n",
                 cx,
             );
             buffer.set_language(Some(typescript.clone()), cx);
@@ -1221,10 +1270,10 @@ mod tests {
             "function greet(name: string) {\n  console.log(`Hello, ${name}`);\n}"
         );
 
-        // Test arrow function with const
+        // Test arrow function with const - with blank line separating
         let buffer = cx.new(|cx| {
             let mut buffer = Buffer::local(
-                "const double = (x: number) => {\n  return x * 2;\n};\nconsole.log(double(5));\n",
+                "const double = (x: number) => {\n  return x * 2;\n};\n\nconsole.log(double(5));\n",
                 cx,
             );
             buffer.set_language(Some(typescript.clone()), cx);
@@ -1238,10 +1287,10 @@ mod tests {
         let text: String = snapshot.text_for_range(range.unwrap()).collect();
         assert_eq!(text, "const double = (x: number) => {\n  return x * 2;\n};");
 
-        // Test class with method
+        // Test class with method - with blank line separating
         let buffer = cx.new(|cx| {
             let mut buffer = Buffer::local(
-                "class Counter {\n  count = 0;\n  increment() {\n    this.count++;\n  }\n}\nconst c = new Counter();\n",
+                "class Counter {\n  count = 0;\n  increment() {\n    this.count++;\n  }\n}\n\nconst c = new Counter();\n",
                 cx,
             );
             buffer.set_language(Some(typescript.clone()), cx);
@@ -1258,10 +1307,10 @@ mod tests {
             "class Counter {\n  count = 0;\n  increment() {\n    this.count++;\n  }\n}"
         );
 
-        // Test for-loop
+        // Test for-loop - with blank line separating
         let buffer = cx.new(|cx| {
             let mut buffer = Buffer::local(
-                "for (let i = 0; i < 10; i++) {\n  console.log(i);\n}\nconsole.log(\"done\");\n",
+                "for (let i = 0; i < 10; i++) {\n  console.log(i);\n}\n\nconsole.log(\"done\");\n",
                 cx,
             );
             buffer.set_language(Some(typescript.clone()), cx);
@@ -1280,5 +1329,81 @@ mod tests {
         assert!(range.is_some());
         let text: String = snapshot.text_for_range(range.unwrap()).collect();
         assert_eq!(text, "console.log(\"done\");");
+    }
+
+    #[gpui::test]
+    fn test_block_range_comment_grouping(cx: &mut App) {
+        let python = languages::language("python", tree_sitter_python::LANGUAGE.into());
+
+        // Test that comments immediately before a block are included
+        let buffer = cx.new(|cx| {
+            let mut buffer = Buffer::local(
+                "# This is a comment\n# Another comment\ndef foo():\n    pass\n",
+                cx,
+            );
+            buffer.set_language(Some(python.clone()), cx);
+            buffer
+        });
+        let snapshot = buffer.read(cx).snapshot();
+
+        // Cursor in function should include preceding comments (no blank line)
+        let range = block_range(&snapshot, Point::new(3, 4)..Point::new(3, 4));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(
+            text,
+            "# This is a comment\n# Another comment\ndef foo():\n    pass"
+        );
+
+        // Test that blank line stops comment grouping
+        let buffer = cx.new(|cx| {
+            let mut buffer = Buffer::local(
+                "# Separate comment\n\n# Attached comment\ndef bar():\n    pass\n",
+                cx,
+            );
+            buffer.set_language(Some(python.clone()), cx);
+            buffer
+        });
+        let snapshot = buffer.read(cx).snapshot();
+
+        // Cursor in function should only include comment after blank line
+        let range = block_range(&snapshot, Point::new(4, 4)..Point::new(4, 4));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(text, "# Attached comment\ndef bar():\n    pass");
+
+        // Test function without preceding comments
+        let buffer = cx.new(|cx| {
+            let mut buffer = Buffer::local("def baz():\n    pass\n", cx);
+            buffer.set_language(Some(python.clone()), cx);
+            buffer
+        });
+        let snapshot = buffer.read(cx).snapshot();
+
+        let range = block_range(&snapshot, Point::new(1, 4)..Point::new(1, 4));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(text, "def baz():\n    pass");
+
+        // Test cursor ON a comment line - should include following code
+        let buffer = cx.new(|cx| {
+            let mut buffer =
+                Buffer::local("# This comment\n# Another line\ndef qux():\n    pass\n", cx);
+            buffer.set_language(Some(python.clone()), cx);
+            buffer
+        });
+        let snapshot = buffer.read(cx).snapshot();
+
+        // Cursor on first comment line should select comments + function
+        let range = block_range(&snapshot, Point::new(0, 5)..Point::new(0, 5));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(text, "# This comment\n# Another line\ndef qux():\n    pass");
+
+        // Cursor on second comment line should also select comments + function
+        let range = block_range(&snapshot, Point::new(1, 5)..Point::new(1, 5));
+        assert!(range.is_some());
+        let text: String = snapshot.text_for_range(range.unwrap()).collect();
+        assert_eq!(text, "# This comment\n# Another line\ndef qux():\n    pass");
     }
 }
